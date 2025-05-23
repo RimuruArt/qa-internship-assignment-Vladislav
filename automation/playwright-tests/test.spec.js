@@ -6,7 +6,7 @@ const { test, expect } = require('@playwright/test');
 test.describe('Проверка формы регистрации', () => {
   test('Успешная отправка формы с корректными данными', async ({ page }) => {
     await page.goto('http://example.com/register');
-    await page.fill('#name', 'Иван Иванов');
+    await page.fill('#name', 'Vladislav');
     await page.fill('#email', 'vlad2006555@yandex.ru');
     await page.fill('#password', 'ValidPass123');
     await page.fill('#confirmPassword', 'ValidPass123');
