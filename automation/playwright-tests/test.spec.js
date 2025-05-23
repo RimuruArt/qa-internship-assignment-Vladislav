@@ -1,53 +1,44 @@
+// Тесты Playwright
 
-import { test, expect } from '@playwright/test';
 
-function validateEmail(email) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-}
+const { test, expect } = require('@playwright/test');
 
-// TC-001: Успешная отправка формы с корректными данными
-test('Успешная отправка формы', async ({ page }) => {
-  await page.goto('https://www.voxys.ru/contacts.html');
-  await page.fill('#name', 'Menzelincev Vladislav');
-  await page.fill('#email', 'vlad2006555@yandex.ru');
-  await page.fill('#phone', '+79052403036');
-  await page.fill('#message', 'Тестовое сообщение');
-  await page.check('input[type="checkbox"]');
-  await page.click('#submit');
-  await expect(page.locator('.success-message')).toBeVisible();
-});
+test.describe('Проверка формы регистрации', () => {
+  test('Успешная отправка формы с корректными данными', async ({ page }) => {
+    await page.goto('http://example.com/register');
+    await page.fill('#name', 'Иван Иванов');
+    await page.fill('#email', 'ivan.ivanov@example.com');
+    await page.fill('#password', 'ValidPass123');
+    await page.fill('#confirmPassword', 'ValidPass123');
+    await page.check('#terms');  // отмечаем чекбокс согласия
+    await page.click('#submit');
+    await expect(page.locator('.success-message')).toContainText('Спасибо за регистрацию');
+  });
 
-// TC-002: Проверка обязательных полей
-test('Проверка обязательных полей', async ({ page }) => {
-  await page.goto('https://www.voxys.ru/contacts.html');
-  await page.click('#submit');
-  await expect(page.locator('.error')).toBeVisible();
-});
+  test('Отображается ошибка при некорректном email', async ({ page }) => {
+    await page.goto('http://example.com/register');
+    await page.fill('#email', 'invalid-email');  // некорректный формат
+    await page.click('#submit');
+    await expect(page.locator('.error-message')).toContainText('Некорректный формат email');
+  });
 
-// TC-003: Проверка email-валидации
-test('Проверка валидации email', async ({ page }) => {
-  await page.goto('https://www.voxys.ru/contacts.html');
-  await page.fill('#email', 'invalid-email');
-  await page.click('#submit');
-  await expect(page.locator('.email-error')).toBeVisible();
-});
+  test('Отображается ошибка при пустом обязательном поле', async ({ page }) => {
+    await page.goto('http://example.com/register');
+    // Поле "Имя" остаётся пустым (обязательное поле)
+    await page.click('#submit');
+    await expect(page.locator('.error-message')).toContainText('Поле "Имя" обязательно для заполнения');
+  });
 
-// TC-004: Проверка блока контактов
-test('Проверка блока контактов', async ({ page }) => {
-  await page.goto('https://www.voxys.ru/contacts.html');
-  const block = page.locator('.contacts-block');
-  await expect(block).toBeVisible();
-  await expect(block).toContainText('Контакты');
-});
+  test('Проверка наличия блока с преимуществами на главной странице', async ({ page }) => {
+    await page.goto('http://example.com');
+    // Проверяем, что заголовок блока с преимуществами виден
+    await expect(page.locator('h2', { hasText: 'Наши преимущества' })).toBeVisible();
+  });
 
-// TC-005: Попытка отправки без согласия с политикой конфиденциальности
-test('Отправка без согласия с политикой', async ({ page }) => {
-  await page.goto('https://www.voxys.ru/contacts.html');
-  await page.fill('#name', 'Иван');
-  await page.fill('#email', 'vlad2006555@yandex.ru');
-  await page.fill('#phone', '+79052403036');
-  await page.fill('#message', 'Сообщение');
-  // Не ставим чекбокс
-  await page.click('#submit');
-  await expect(page.locator('.checkbox-error')).toBeVisible();
+  test('Навигация: ссылка "О компании" ведёт на правильную страницу', async ({ page }) => {
+    await page.goto('http://example.com');
+    await page.click('text=О компании');  // клик по пункту меню
+    await expect(page).toHaveURL(/.*\/about/);
+    await expect(page.locator('h1')).toHaveText('О компании');
+  });
 });
